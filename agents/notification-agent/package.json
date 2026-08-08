@@ -11,28 +11,28 @@
     "lint": "eslint src/**/*.ts"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.1.0",
-    "winston": "^3.11.0",
+    "agent-name-service": "file:../../ans",
     "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "helmet": "^7.1.0",
     "node-cron": "^3.0.3",
-    "prom-client": "^15.0.0",
     "nodemailer": "^6.9.7",
-    "slack": "^12.0.0",
-    "agent-name-service": "file:../../ans"
+    "prom-client": "^15.0.0",
+    "slack": "^11.0.2",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "@types/express": "^4.17.21",
     "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.0",
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^6.4.14",
-    "typescript": "^5.3.2",
-    "ts-node": "^10.9.1",
+    "eslint": "^8.54.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
-    "eslint": "^8.54.0"
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
   },
   "keywords": [
     "ai",

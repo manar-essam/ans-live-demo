@@ -24,6 +24,15 @@ allow {
     
     # Check resource limits
     resource_limits_valid
+
+    # [تحسين 1]: التحقق من عزل البيئات ومنع الأبحاث والأوبن سورس من دخول الإنتاج
+    environment_isolation_met
+
+    # [تحسين 2]: حوكمة الإصدارات وحظر النسخ القديمة أو غير المستقرة
+    version_governance_met
+
+    # [تحسين 3]: مطابقة مستوى السرية مع حساسية القدرات المطلوبة
+    capabilities_alignment_met
 }
 
 # Check if this is an agent deployment
@@ -89,6 +98,52 @@ resource_limits_valid {
     regex.match("^[0-9]+Mi$|^[0-9]+Gi$", memory_limit)
 }
 
+# -------------------------------------------------------------
+# الأكواد الجديدة المضافة كتحسينات وتطوير على الورقة البحثية الأصلية
+# -------------------------------------------------------------
+
+# تحسين 1: منع مزودي الأبحاث والأوبن سورس من النشر في بيئة الإنتاج الحساسة (production)
+environment_isolation_met {
+    namespace := input.request.namespace
+    provider := input.request.object.metadata.labels["ans.agent/provider"]
+    check_env_restriction(namespace, provider)
+}
+
+check_env_restriction("production", provider) {
+    allowed_prod_providers := ["mlops-team", "devsecops-team"]
+    provider in allowed_prod_providers
+}
+
+check_env_restriction(namespace, _) {
+    namespace != "production"
+}
+
+# تحسين 2: حظر الإصدارات القديمة والتجريبية غير المستقرة من الوكلاء
+version_governance_met {
+    version := input.request.object.metadata.labels["ans.agent/version"]
+    not regex.match("alpha|beta|rc|dev", version)
+    not startswith(version, "v1.")
+}
+
+# تحسين 3: ربط مستوى السرية (Clearance) بنوع القدرة الممنوحة للوكيل (Capability)
+capabilities_alignment_met {
+    capability := input.request.object.metadata.labels["ans.agent/capability"]
+    clearance := input.request.object.metadata.labels["security.ans.io/clearance-level"]
+    check_capability_clearance(capability, clearance)
+}
+
+check_capability_clearance("financial-transactions", clearance) { clearance == "5" }
+check_capability_clearance("database-write", clearance) { clearance == "5" }
+
+check_capability_clearance(capability, _) {
+    capability != "financial-transactions"
+    capability != "database-write"
+}
+
+# -------------------------------------------------------------
+# توليد رسائل الخطأ والتحقق من الانتهاكات (Violations)
+# -------------------------------------------------------------
+
 # Generate violation message
 violation[{"msg": msg}] {
     not allow
@@ -110,6 +165,18 @@ get_violation_reason = reason {
 } else = reason {
     not resource_limits_valid
     reason := "Invalid resource limits"
+} else = reason {
+    # رسالة الخطأ الخاصة بالتحسين الأول
+    not environment_isolation_met
+    reason := "Environment isolation violation: Untrusted providers cannot deploy to production namespace"
+} else = reason {
+    # رسالة الخطأ الخاصة بالتحسين الثاني
+    not version_governance_met
+    reason := "Version governance violation: Legacy (v1.x) or unstable versions (alpha/beta) are blocked"
+} else = reason {
+    # رسالة الخطأ الخاصة بالتحسين الثالث
+    not capabilities_alignment_met
+    reason := "Capabilities alignment violation: High-risk capabilities require clearance-level 5"
 } else = reason {
     reason := "Unknown violation"
 }

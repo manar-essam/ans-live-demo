@@ -80,8 +80,8 @@ export class MetricsCollector {
     this.notificationErrors.inc({ type, channel, error_type: errorType });
   }
 
-  getMetrics(): string {
-    return register.metrics();
+   async getMetrics(): Promise<string> {
+    return  register.metrics();
   }
 
   getContentType(): string {

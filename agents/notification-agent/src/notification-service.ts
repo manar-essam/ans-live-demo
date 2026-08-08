@@ -90,7 +90,7 @@ export class NotificationService {
         notificationId,
         status: notificationStatus.status
       };
-    } catch (error) {
+    } catch (error:any ) {
       notificationStatus.status = 'failed';
       this.logger.error('Notification failed', {
         notificationId,
@@ -125,7 +125,7 @@ export class NotificationService {
         recipient,
         timestamp: new Date()
       };
-    } catch (error) {
+    } catch (error:any) {
       this.logger.error('Failed to send notification to recipient', {
         notificationId,
         recipient,
